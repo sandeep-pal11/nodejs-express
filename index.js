@@ -1,47 +1,22 @@
+import 'dotenv/config';
 import express from 'express';
+import connectDB from './config/db.js';
+import indexRoutes from './routes/index.routes.js';
+
 const app = express();
 
-import mongoose from 'mongoose';   
-import contactModel from './models/contacts.models.js';
+// Connect to Database
+await connectDB();
 
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static('public'));  
 
-//database connection
+// Routes
+app.use('/', indexRoutes);
 
-mongoose.connect('mongodb://127.0.0.1:27017/myapp').then(() => 
-    console.log('Connected to MongoDB'));
-  
+const PORT = process.env.PORT || 3000;
 
-
-app.get('/', (req, res) => {
-    res.send('Hello, World!');  
-});
-
-app.get('/about', (req, res) => {
-    res.render('about',{title: 'About Page', description: 'This is the about page.'});  
-});
-
-app.get('/form', (req, res) => {
-    res.render('form');  
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 }); 
-
-
-app.post('/form', async (req, res) => {
-    try {
-        const { name, email, phone } = req.body;
-        const newContact = new contactModel({ name, email, phone });
-        await newContact.save();
-        res.redirect('/form'); // Redirect back to form or to a success page
-    } catch (error) {
-        console.error("Error saving contact:", error);
-        res.status(500).send("Error saving data");
-    }
-});
-
-
-app.listen(3000, () => {
-    console.log('Server is running on port 3000');
-}); 
-
